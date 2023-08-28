@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>에이블 비행기 게임</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            cursor: none; /* 마우스 커서 숨기기 */
+        }
+        #airplane {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+        }
+        .purple-circle {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: purple;
+        }
+        #clear {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            font-weight: bold;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <img id="airplane" src="airplane.png" alt="Airplane">
+    <div id="clear">클리어!</div>
+    <script>
+        const airplane = document.getElementById("airplane");
+        const purpleCircles = [];
+        let hitCount = 0;
+        let startTime = null;
+
+        function createPurpleCircle() {
+            const circle = document.createElement("div");
+            circle.classList.add("purple-circle");
+            circle.style.left = Math.random() * window.innerWidth + "px";
+            document.body.appendChild(circle);
+            purpleCircles.push(circle);
+        }
+
+        function movePurpleCircles(timestamp) {
+            if (!startTime) {
+                startTime = timestamp;
+            }
+            
+            for (let i = 0; i < purpleCircles.length; i++) {
+                const circle = purpleCircles[i];
+                const top = parseFloat(circle.style.top || 0);
+                const left = parseFloat(circle.style.left || 0);
+                
+                if (top > window.innerHeight) {
+                    circle.style.top = "-20px";
+                    circle.style.left = Math.random() * window.innerWidth + "px";
+                } else {
+                    circle.style.top = top + 5 + "px";
+                }
+
+                // 충돌 감지
+                const airplaneRect = airplane.getBoundingClientRect();
+                const circleRect = circle.getBoundingClientRect();
+                if (
+                    circleRect.top + circleRect.height >= airplaneRect.top &&
+                    circleRect.left + circleRect.width >= airplaneRect.left &&
+                    circleRect.top <= airplaneRect.bottom &&
+                    circleRect.left <= airplaneRect.right &&
+                    !circle.hit
+                ) {
+                    circle.hit = true;
+                    hitCount++;
+                    if (hitCount >= 3) {
+                        window.close(); // 브라우저 닫기
+                    }
+                }
+            }
+
+            if (timestamp - startTime < 30000) {
+                requestAnimationFrame(movePurpleCircles);
+            } else {
+                document.getElementById("clear").style.display = "block";
+            }
+        }
+
+        document.addEventListener("mousemove", (event) => {
+            airplane.style.left = event.clientX + "px";
+            airplane.style.top = event.clientY + "px";
+        });
+
+        window.addEventListener("load", () => {
+            for (let i = 0; i < 63; i++) {
+                createPurpleCircle();
+            }
+            requestAnimationFrame(movePurpleCircles);
+        });
+    </script>
+</body>
+</html>
